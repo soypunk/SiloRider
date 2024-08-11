@@ -80,18 +80,30 @@ def _modify_html_doc(doc, name, config):
 
     logger.debug("Modifying HTML doc:")
     for selector, to_add in class_mods:
+        # Hack to support semicolon and equal signs in .ini files...
+        # Note that Python seems to make all key names lowercase.
+        selector = selector.replace('$semicolon$', ':')
+        selector = selector.replace('$equals$', '=')
+
         elems = list(doc.select(selector))
         if not elems:
             logger.warning("No elements matched by rule: %s" % selector)
             continue
+
         for elem in elems:
-            logger.debug("Adding %s to %s" % (to_add, elem.name))
-            if to_add == 'dt-published':
+            if to_add == '$MOVE_UP$':
+                _move_element_up(doc, elem)
+            elif to_add == 'dt-published':
                 _insert_html_datetime_published(doc, elem)
             else:
-                if 'class' not in elem.attrs:
-                    elem['class'] = []
-                elem['class'].append(to_add)
+                _add_class_to_element(doc, elem, to_add)
+
+
+def _move_element_up(doc, elem):
+    dest = elem.parent.parent
+    logger.debug("Moving '%s' up to '%s'" % (elem.name, dest.name))
+    elem.extract()
+    dest.append(elem)
 
 
 def _insert_html_datetime_published(doc, elem):
@@ -114,6 +126,13 @@ def _insert_html_datetime_published(doc, elem):
     elem.clear()
     elem.append(time_el)
     logger.debug("Adding datetime attribute: %s" % dt)
+
+
+def _add_class_to_element(doc, elem, to_add):
+    logger.debug("Adding %s to %s" % (to_add, elem.name))
+    if 'class' not in elem.attrs:
+        elem['class'] = []
+    elem['class'].append(to_add)
 
 
 class InvalidEntryException(Exception):
@@ -226,6 +245,7 @@ class EntryMatcher:
         for item in items:
             item_types = item.get('type', [])
             if 'h-feed' not in item_types:
+                logger.debug("Rejecting item of types: %s" % item_types)
                 continue
 
             children = item.get('children', [])
