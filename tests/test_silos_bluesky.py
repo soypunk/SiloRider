@@ -143,6 +143,19 @@ def test_one_micropost_with_links(cli, feedutil, bskymock):
     assert post[2] == [facet]
 
 
+def test_one_micropost_too_long(cli, feedutil, bskymock):
+    cli.appendSiloConfig('test', 'bluesky')
+    bskymock.installCredentials(cli, 'test')
+
+    feed = cli.createTempFeed(feedutil.makeFeed(
+        """<p class="p-name">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum</p>
+        <a class="u-url" href="/01234.html">permalink</a>"""))
+
+    cli.setFeedConfig('feed', feed)
+    ctx, _ = cli.run('process')
+    post = ctx.silos[0].client.posts[0]
+    assert post[0] == "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate... /01234.html"
+
 def _make_link_facet(url, start, end):
     return atprotomodels.AppBskyRichtextFacet.Main(
         features=[atprotomodels.AppBskyRichtextFacet.Link(uri=url)],

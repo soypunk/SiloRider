@@ -86,10 +86,11 @@ def format_entry(entry, *,
     # stuff with it (for instance the Bluesky silo will remember the
     # byte offsets to insert a hyperlink).
     if do_add_url and url:
+        ctx.reportAddedText(1)  # for the space before the URL.
         url = _process_end_url(url, ctx)
-        card.text += ' ' + url
         url_len = ctx.url_flattener.measureUrl(url)
-        ctx.reportAddedText(1 + url_len)
+        ctx.reportAddedText(url_len)
+        card.text += ' ' + url
     return card
 
 
@@ -184,10 +185,10 @@ class HtmlStrippingContext:
     def limit_reached(self):
         return self._limit_reached
 
-    def processText(self, txt, allow_shorten=True):
+    def processText(self, txt, allow_shorten=True, check_limit=True):
         added_len = len(txt)
         next_text_length = self._text_length + added_len
-        if self.limit <= 0 or next_text_length <= self.limit:
+        if (not check_limit) or (self.limit <= 0 or next_text_length <= self.limit):
             self._text_length = next_text_length
             self._byte_length += len(txt.encode())
             return txt
