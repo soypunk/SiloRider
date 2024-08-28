@@ -214,10 +214,13 @@ class Entry:
         name = self.get('name')
         content = self.get('content-plain')
         if content and not name:
+            logger.debug("Flagging as micropost: has content but no name")
             is_micro = True
         elif name and not content:
+            logger.debug("Flagging as micropost: has name but no content")
             is_micro = True
         elif name and content:
+            logger.debug("Flagging as micropost: title is a truncation of content")
             shortest = min(len(name), len(content))
             is_micro = (name[:shortest] == content[:shortest])
         self._props['is_micropost'] = is_micro
