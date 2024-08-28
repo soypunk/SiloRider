@@ -22,6 +22,8 @@ from atproto import models as atprotomodels
 
 logger = logging.getLogger(__name__)
 
+re_hashtags = re.compile(r'#[\w\d]+')
+
 
 class _BlueskyClient(atproto.Client):
     def __init__(self, *args, **kwargs):
@@ -128,11 +130,10 @@ class BlueskySilo(Silo):
 
         # Grab any URLs detected by our URL flattener and add them as
         # facets on the atproto record.
-        facets = None
+        facets = []
         first_url = None
         url_flattener = entry_card.__bsky_url_flattener
         if url_flattener.urls:
-            facets = []
             for url_info in url_flattener.urls:
                 # atproto requires an http or https scheme.
                 start, end, url = url_info
@@ -142,12 +143,30 @@ class BlueskySilo(Silo):
                 facet = atprotomodels.AppBskyRichtextFacet.Main(
                     features=[atprotomodels.AppBskyRichtextFacet.Link(uri=url)],
                     index=atprotomodels.AppBskyRichtextFacet.ByteSlice(
-                        byteStart=start, byteEnd=end),
+                        byteStart=start, byteEnd=end)
                     )
                 facets.append(facet)
 
                 if first_url is None:
                     first_url = url
+
+        # Look for hashtags and turn them into facets too.
+        for htm in re_hashtags.finditer(entry_card.text):
+            start = htm.start()
+            end = htm.end()
+            tagname = htm.group()[1:]  # skip the hashtag character
+
+            facet = atprotomodels.AppBskyRichtextFacet.Main(
+                features=[atprotomodels.AppBskyRichtextFacet.Tag(tag=tagname)],
+                index=atprotomodels.AppBskyRichtextFacet.ByteSlice(
+                    byteStart=start, byteEnd=end)
+                )
+            facets.append(facet)
+
+        # A bit cleaner to pass None instead of an empty array if we don't
+        # have any facets.
+        if len(facets) == 0:
+            facets = None
 
         # Make a link embed for the first link if we didn't have an embed already.
         if embed is None and first_url is not None:
