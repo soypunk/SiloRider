@@ -151,15 +151,21 @@ class BlueskySilo(Silo):
                     first_url = url
 
         # Look for hashtags and turn them into facets too.
-        for htm in re_hashtags.finditer(entry_card.text):
+        entry_text = entry_card.text
+        for htm in re_hashtags.finditer(entry_text):
             start = htm.start()
             end = htm.end()
             tagname = htm.group()[1:]  # skip the hashtag character
 
+            # Not a very efficient way to get the byte offsets, but that will
+            # do for now.
+            byte_start = len(entry_text[:start].encode())
+            byte_end = len(entry_text[:end].encode())
+
             facet = atprotomodels.AppBskyRichtextFacet.Main(
                 features=[atprotomodels.AppBskyRichtextFacet.Tag(tag=tagname)],
                 index=atprotomodels.AppBskyRichtextFacet.ByteSlice(
-                    byteStart=start, byteEnd=end)
+                    byteStart=byte_start, byteEnd=byte_end)
                 )
             facets.append(facet)
 
