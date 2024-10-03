@@ -34,7 +34,7 @@ class MastodonSilo(Silo):
             pair = self._CLIENT_CLASS.create_app(
                 'SiloRider',
                 scopes=['read', 'write'],
-                api_base_url=self.base_url
+                api_base_url=self.base_url                
             )
             client_token = '%s,%s' % pair
             self.setCacheItem('clienttoken', client_token)
@@ -78,7 +78,11 @@ class MastodonSilo(Silo):
                             "code back here:")
 
                 import webbrowser
-                req_url = m.auth_request_url(scopes=['write'])
+                req_url = m.auth_request_url(
+                    'SiloRider',
+                    scopes=['write'],
+                    redirect_uris="urn:ietf:wg:oauth:2.0:oob"
+                )
                 webbrowser.open(req_url)
 
                 access_token = input("Authentication code: ")
