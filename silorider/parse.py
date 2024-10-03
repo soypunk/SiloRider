@@ -68,8 +68,7 @@ def parse_mf2(url_or_path, name, config):
     # Parse the microformats!
     return mf2py.Parser(
             doc=html_doc,
-            html_parser='html5lib',
-            img_with_alt=True)
+            html_parser='html5lib')
 
 
 def _modify_html_doc(doc, name, config):
