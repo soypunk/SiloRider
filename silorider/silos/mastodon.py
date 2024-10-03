@@ -79,7 +79,7 @@ class MastodonSilo(Silo):
 
                 import webbrowser
                 req_url = m.auth_request_url(
-                    'SiloRider',
+                    client_id,
                     scopes=['write'],
                     redirect_uris="urn:ietf:wg:oauth:2.0:oob"
                 )
