@@ -34,7 +34,9 @@ class MastodonSilo(Silo):
             pair = self._CLIENT_CLASS.create_app(
                 'SiloRider',
                 scopes=['read', 'write'],
-                api_base_url=self.base_url                
+                api_base_url=self.base_url,
+                redirect_uris="urn:ietf:wg:oauth:2.0:oob",
+                website="https://bolt80.com/silorider/"
             )
             client_token = '%s,%s' % pair
             self.setCacheItem('clienttoken', client_token)
