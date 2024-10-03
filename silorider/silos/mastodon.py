@@ -48,7 +48,8 @@ class MastodonSilo(Silo):
             m = self._CLIENT_CLASS(
                 client_id=client_id,
                 client_secret=client_secret,
-                api_base_url=self.base_url)
+                api_base_url=self.base_url,
+                redirect_uris="urn:ietf:wg:oauth:2.0:oob")
 
             if ctx.exec_ctx.args.console:
                 logger.info("Authenticating user with Mastodon for %s" %
@@ -116,7 +117,8 @@ class MastodonSilo(Silo):
             client_id=client_id,
             client_secret=client_secret,
             access_token=access_token,
-            api_base_url=self.base_url)
+            api_base_url=self.base_url,
+            redirect_uris="urn:ietf:wg:oauth:2.0:oob")
 
     def getProfileUrlHandler(self):
         return MastodonProfileUrlHandler()
